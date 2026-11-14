@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Netlify 前后端分离测试</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
+    button { padding: 8px 14px; margin-right: 8px; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 12px; border-radius: 8px; white-space: pre-wrap; min-height: 80px; }
+    .ok { color: #087f5b; } .err { color: #c92a2a; }
+  </style>
+</head>
+<body>
+  <h1>Netlify 前后端分离部署测试</h1>
+  <p>点击下方按钮，分别测试 <code>/api/health</code> 与 <code>/api/chat</code> 是否真的由函数响应。</p>
+  <p>
+    <button id="b-health">测 /api/health</button>
+    <button id="b-chat">测 /api/chat</button>
+  </p>
+  <div id="out">（结果会显示在这里）</div>
+
+  <script>
+    const out = document.getElementById('out');
+    function show(title, res, text) {
+      const cls = res.ok ? 'ok' : 'err';
+      out.innerHTML = '<strong class="' + cls + '">' + title + ' → HTTP ' + res.status +
+        ' · ' + res.type + '</strong>\n' + text;
+    }
+    document.getElementById('b-health').onclick = async () => {
+      try {
+        const r = await fetch('/api/health');
+        show('HEALTH', r, await r.text());
+      } catch (e) { show('HEALTH', { ok: false }, String(e)); }
+    };
+    document.getElementById('b-chat').onclick = async () => {
+      try {
+        const r = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [{ role: 'user', content: '你好，这是测试' }] })
+        });
+        show('CHAT', r, await r.text());
+      } catch (e) { show('CHAT', { ok: false }, String(e)); }
+    };
+  </script>
+</body>
+</html>
